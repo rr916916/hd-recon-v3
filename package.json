@@ -26,7 +26,14 @@
   "private": true,
   "cds": {
     "requires": {
-      "db": "sql",
+      "db": {
+        "kind": "hana",
+        "pool": {
+          "acquireTimeoutMillis": 30000,
+          "min": 1,
+          "max": 10
+        }
+      },
       "auth": "dummy",
       "MicrosoftGraphAPI": {
         "kind": "rest",
@@ -40,20 +47,6 @@
       "requires": {
         "db": {
           "kind": "sqlite"
-        }
-      }
-    },
-    "[hybrid]": {
-      "requires": {
-        "db": {
-          "kind": "hana"
-        }
-      }
-    },
-    "[production]": {
-      "requires": {
-        "db": {
-          "kind": "hana"
         }
       }
     }

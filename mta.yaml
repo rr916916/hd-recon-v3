@@ -11,6 +11,8 @@ build-parameters:
       commands:
         - npm ci
         - npx cds build --production
+        - cp -r scripts gen/srv/
+        - cp -r app gen/srv/
 
 modules:
   # --------------------- SERVER MODULE ------------------------
@@ -29,6 +31,8 @@ modules:
           srv-url: ${default-url}
     requires:
       - name: hd-recon-v3-db
+      - name: hd-recon-v3-destination
+      - name: hd-recon-v3-aicore
 
   # --------------------- DB DEPLOYER MODULE -------------------
   - name: hd-recon-v3-db-deployer
@@ -48,3 +52,16 @@ resources:
       service-plan: hdi-shared
     properties:
       hdi-service-name: ${service-name}
+
+  # --------------------- DESTINATION SERVICE ------------------
+  - name: hd-recon-v3-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+
+  # --------------------- AI CORE SERVICE ----------------------
+  - name: hd-recon-v3-aicore
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: default_aicore

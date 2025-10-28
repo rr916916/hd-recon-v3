@@ -1,9 +1,11 @@
 const cds = require('@sap/cds');
 const emailSync = require('./lib/email-sync');
-const { generateEmbeddings } = require('../scripts/generate-embeddings');
+// Lazy load generate-embeddings to avoid deployment issues if scripts folder not present
+// const { generateEmbeddings } = require('../scripts/generate-embeddings');
 
-module.exports = cds.service.impl(async function() {
-  const { Historical, BankStatementHeader, BankStatementLine, LineMatch, EmailCache } = this.entities;
+module.exports = async function() {
+  // Get DB entities from CDS model
+  const { BankStatementHeader, BankStatementLine, Historical, LineMatch, EmailCache } = cds.entities('reconciliation');
 
   /**
    * Add Statement Action Handler
@@ -127,6 +129,8 @@ module.exports = cds.service.impl(async function() {
   this.on('generateEmbeddings', async () => {
     console.log('\n🤖 Admin: Generating embeddings for Historical and EmailCache...');
     try {
+      // Lazy load the module to avoid deployment issues
+      const { generateEmbeddings } = require('../scripts/generate-embeddings');
       const result = await generateEmbeddings();
       console.log('✅ Embeddings generated successfully');
       return result;
@@ -269,4 +273,4 @@ module.exports = cds.service.impl(async function() {
       return [];
     }
   }
-});
+};

@@ -7,7 +7,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:4004",
+      "value": "https://the-home-depot---us-thd-hackathon-us-poc-dev-hd-recon-v3-srv.cfapps.us30.hana.ondemand.com",
       "type": "string"
     },
     {

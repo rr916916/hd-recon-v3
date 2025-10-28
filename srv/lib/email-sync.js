@@ -76,10 +76,9 @@ async function syncEmails(db, daysBack = 2) {
       await db.run(INSERT.into('reconciliation.EmailCache').entries(emailRecords));
       console.log(`   ✅ Emails stored successfully`);
 
-      // Generate embeddings for new emails
-      console.log(`   🤖 Generating vector embeddings...`);
-      const embeddingCount = await generateEmbeddings(db, syncBatchId);
-      console.log(`   ✅ Generated ${embeddingCount} embeddings`);
+      // Skip embedding generation during sync to avoid timeouts
+      // Embeddings can be generated separately via the /generateEmbeddings endpoint
+      console.log(`   ℹ️  Embedding generation skipped (call /generateEmbeddings to generate them later)`);
     }
 
     const duration = Date.now() - startTime;

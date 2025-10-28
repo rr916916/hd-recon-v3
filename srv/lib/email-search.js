@@ -57,11 +57,13 @@ async function searchInbox(companyName, amount, valueDate, daysBefore = 3, daysA
     // Note: Using /users/{email}/messages instead of /me/messages for app-only auth
     const response = await executeHttpRequest(
       {
-        destinationName: 'MicrosoftGraphAPI'
+        destinationName: 'MicrosoftGraphAPI',
+        timeout: 30000  // 30 second timeout
       },
       {
         method: 'GET',
-        url: `/v1.0/users/${mailboxEmail}/messages?${queryParams.toString()}`
+        url: `/v1.0/users/${mailboxEmail}/messages?${queryParams.toString()}`,
+        timeout: 30000  // 30 second timeout
       }
     );
 
@@ -195,11 +197,13 @@ async function fetchFromGraphAPI(endpoint) {
 
     const response = await executeHttpRequest(
       {
-        destinationName: 'MicrosoftGraphAPI'
+        destinationName: 'MicrosoftGraphAPI',
+        timeout: 30000  // 30 second timeout
       },
       {
         method: 'GET',
-        url
+        url,
+        timeout: 30000  // 30 second timeout
       }
     );
 
