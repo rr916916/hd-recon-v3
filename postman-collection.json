@@ -1,0 +1,1048 @@
+{
+  "info": {
+    "name": "HD Recon V3 - Bank Reconciliation Service",
+    "description": "Complete test suite for Bank Reconciliation Service with all test cases",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4004",
+      "type": "string"
+    },
+    {
+      "key": "serviceUrl",
+      "value": "{{baseUrl}}/odata/v4/reconciliation",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Setup & Admin",
+      "item": [
+        {
+          "name": "Get Service Metadata",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/$metadata",
+              "host": ["{{serviceUrl}}"],
+              "path": ["$metadata"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete All Statements (Cleanup)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{serviceUrl}}/deleteAllStatements",
+              "host": ["{{serviceUrl}}"],
+              "path": ["deleteAllStatements"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete All Emails (Cleanup)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{serviceUrl}}/deleteAllEmails",
+              "host": ["{{serviceUrl}}"],
+              "path": ["deleteAllEmails"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Historical Data",
+      "item": [
+        {
+          "name": "Get All Historical Records",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Historical",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Historical"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Historical with Filter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Historical?$filter=contains(wireText,'payment')",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Historical"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "contains(wireText,'payment')"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Historical Top 10",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Historical?$top=10&$orderby=createdAt desc",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Historical"],
+              "query": [
+                {
+                  "key": "$top",
+                  "value": "10"
+                },
+                {
+                  "key": "$orderby",
+                  "value": "createdAt desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Historical Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"wireText\": \"ACME Corporation - Invoice Payment INV-2024-001\",\n  \"postingKey\": \"50\",\n  \"glAccount\": \"1100000\",\n  \"customerNo\": \"CUST-1001\",\n  \"companyCode\": \"1000\",\n  \"costCentre\": \"CC-100\",\n  \"profitCentre\": \"PC-100\",\n  \"febanDescription\": \"Customer Payment\",\n  \"comments\": \"Regular customer payment\"\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/Historical",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Historical"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Historical - Supplier Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"wireText\": \"Office Supplies Inc - Purchase Order PO-5678\",\n  \"postingKey\": \"40\",\n  \"glAccount\": \"2100000\",\n  \"customerNo\": \"VEND-2001\",\n  \"companyCode\": \"1000\",\n  \"costCentre\": \"CC-200\",\n  \"profitCentre\": \"PC-200\",\n  \"febanDescription\": \"Supplier Payment\",\n  \"comments\": \"Office supplies purchase\"\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/Historical",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Historical"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Add Statement Tests",
+      "item": [
+        {
+          "name": "Add Statement - Single Line",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData).to.have.property('linesProcessed');",
+                  "    pm.expect(jsonData).to.have.property('matchesFound');",
+                  "});",
+                  "",
+                  "pm.test(\"Lines processed correctly\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.linesProcessed).to.equal(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Bukrs\": \"1000\",\n  \"Hbkid\": \"CITI\",\n  \"Hktid\": \"CHK01\",\n  \"Aznum\": \"2024001\",\n  \"Azdat\": \"2024-10-28\",\n  \"Astat\": \"A\",\n  \"Waers\": \"USD\",\n  \"Esnum\": \"EXT01\",\n  \"Kwbtr\": 1500.00,\n  \"Vb1ok\": \"X\",\n  \"Vb2ok\": \"\",\n  \"Vwezw\": \"ACME Corporation - Invoice Payment INV-2024-001\"\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/addStatement",
+              "host": ["{{serviceUrl}}"],
+              "path": ["addStatement"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Statement - Multiple Lines",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Multiple lines processed\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.linesProcessed).to.be.above(1);",
+                  "});",
+                  "",
+                  "pm.test(\"Best match returned\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.bestMatch) {",
+                  "        pm.expect(jsonData.bestMatch).to.have.property('lineNo');",
+                  "        pm.expect(jsonData.bestMatch).to.have.property('confidence');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Bukrs\": \"1000\",\n  \"Hbkid\": \"CITI\",\n  \"Hktid\": \"CHK01\",\n  \"Aznum\": \"2024002\",\n  \"Azdat\": \"2024-10-28\",\n  \"Astat\": \"A\",\n  \"Waers\": \"USD\",\n  \"Esnum\": \"EXT02\",\n  \"Kwbtr\": 2500.00,\n  \"Vb1ok\": \"X\",\n  \"Vb2ok\": \"\",\n  \"Vwezw\": \"BO: ACME Corporation\\nBN: Invoice Payment\\nREF: INV-2024-001\\nAMT: $1500.00\"\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/addStatement",
+              "host": ["{{serviceUrl}}"],
+              "path": ["addStatement"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Statement - With Prefixes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Bukrs\": \"1000\",\n  \"Hbkid\": \"CITI\",\n  \"Hktid\": \"CHK01\",\n  \"Aznum\": \"2024003\",\n  \"Azdat\": \"2024-10-28\",\n  \"Astat\": \"A\",\n  \"Waers\": \"USD\",\n  \"Esnum\": \"EXT03\",\n  \"Kwbtr\": 3500.00,\n  \"Vb1ok\": \"X\",\n  \"Vb2ok\": \"\",\n  \"Vwezw\": \"BO: Office Supplies Inc\\nBN: Purchase Order\\nREF: PO-5678\\nINV: 2024-3456\\nAMT: $3500.00\\nDATE: 10/28/2024\"\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/addStatement",
+              "host": ["{{serviceUrl}}"],
+              "path": ["addStatement"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Statement - Empty Vwezw",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"No lines processed for empty Vwezw\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.linesProcessed).to.equal(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Bukrs\": \"1000\",\n  \"Hbkid\": \"CITI\",\n  \"Hktid\": \"CHK01\",\n  \"Aznum\": \"2024004\",\n  \"Azdat\": \"2024-10-28\",\n  \"Astat\": \"A\",\n  \"Waers\": \"USD\",\n  \"Esnum\": \"EXT04\",\n  \"Kwbtr\": 0.00,\n  \"Vb1ok\": \"\",\n  \"Vb2ok\": \"\",\n  \"Vwezw\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/addStatement",
+              "host": ["{{serviceUrl}}"],
+              "path": ["addStatement"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Statement - Special Characters",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Bukrs\": \"1000\",\n  \"Hbkid\": \"CITI\",\n  \"Hktid\": \"CHK01\",\n  \"Aznum\": \"2024005\",\n  \"Azdat\": \"2024-10-28\",\n  \"Astat\": \"A\",\n  \"Waers\": \"EUR\",\n  \"Esnum\": \"EXT05\",\n  \"Kwbtr\": 1234.56,\n  \"Vb1ok\": \"X\",\n  \"Vb2ok\": \"\",\n  \"Vwezw\": \"BO: Müller & Co. GmbH\\nBN: Überweisung\\nREF: RE-2024/001\\nBETRAG: €1.234,56\"\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/addStatement",
+              "host": ["{{serviceUrl}}"],
+              "path": ["addStatement"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Statement - Large Amount",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Bukrs\": \"2000\",\n  \"Hbkid\": \"BOFA\",\n  \"Hktid\": \"SAV01\",\n  \"Aznum\": \"2024006\",\n  \"Azdat\": \"2024-10-28\",\n  \"Astat\": \"A\",\n  \"Waers\": \"USD\",\n  \"Esnum\": \"EXT06\",\n  \"Kwbtr\": 999999.99,\n  \"Vb1ok\": \"X\",\n  \"Vb2ok\": \"X\",\n  \"Vwezw\": \"Large Corporate Transfer\\nCompany: MegaCorp International\\nReference: WIRE-2024-999\\nAmount: $999,999.99\"\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/addStatement",
+              "host": ["{{serviceUrl}}"],
+              "path": ["addStatement"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 - Query Statements",
+      "item": [
+        {
+          "name": "Get All Statements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Statements",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Statements"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Statements with Lines (Expand)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Statements?$expand=lines",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Statements"],
+              "query": [
+                {
+                  "key": "$expand",
+                  "value": "lines"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Statements with Lines and Matches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Statements?$expand=lines($expand=matches)",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Statements"],
+              "query": [
+                {
+                  "key": "$expand",
+                  "value": "lines($expand=matches)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Matched Statements Only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Statements?$filter=matchStatus eq 'MATCHED'",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Statements"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "matchStatus eq 'MATCHED'"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unmatched Statements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Statements?$filter=matchStatus eq 'NO_MATCH'",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Statements"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "matchStatus eq 'NO_MATCH'"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Statements by Company Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Statements?$filter=Bukrs eq '1000'",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Statements"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "Bukrs eq '1000'"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Statements by Date Range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Statements?$filter=Azdat ge 2024-10-01 and Azdat le 2024-10-31",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Statements"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "Azdat ge 2024-10-01 and Azdat le 2024-10-31"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Statement by ID with Full Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Statements({{statementId}})?$expand=lines($expand=matches($expand=historical))",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Statements({{statementId}})"],
+              "query": [
+                {
+                  "key": "$expand",
+                  "value": "lines($expand=matches($expand=historical))"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 - Statement Lines",
+      "item": [
+        {
+          "name": "Get All Statement Lines",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/StatementLines",
+              "host": ["{{serviceUrl}}"],
+              "path": ["StatementLines"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Matched Lines Only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/StatementLines?$filter=matched eq true",
+              "host": ["{{serviceUrl}}"],
+              "path": ["StatementLines"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "matched eq true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Lines with Matches Expanded",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/StatementLines?$expand=matches,matchedHistorical,header",
+              "host": ["{{serviceUrl}}"],
+              "path": ["StatementLines"],
+              "query": [
+                {
+                  "key": "$expand",
+                  "value": "matches,matchedHistorical,header"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Line by Text Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/StatementLines?$filter=contains(lineText,'ACME')",
+              "host": ["{{serviceUrl}}"],
+              "path": ["StatementLines"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "contains(lineText,'ACME')"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 - Line Matches",
+      "item": [
+        {
+          "name": "Get All Line Matches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/LineMatches",
+              "host": ["{{serviceUrl}}"],
+              "path": ["LineMatches"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Top Matches (Rank 1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/LineMatches?$filter=rank eq 1&$orderby=confidence desc",
+              "host": ["{{serviceUrl}}"],
+              "path": ["LineMatches"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "rank eq 1"
+                },
+                {
+                  "key": "$orderby",
+                  "value": "confidence desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get High Confidence Matches (>80)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/LineMatches?$filter=confidence gt 80",
+              "host": ["{{serviceUrl}}"],
+              "path": ["LineMatches"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "confidence gt 80"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Matches by Strategy",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/LineMatches?$filter=strategy eq 'FUZZY_TEXT'",
+              "host": ["{{serviceUrl}}"],
+              "path": ["LineMatches"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "strategy eq 'FUZZY_TEXT'"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Matches with Line and Historical",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/LineMatches?$expand=line,historical",
+              "host": ["{{serviceUrl}}"],
+              "path": ["LineMatches"],
+              "query": [
+                {
+                  "key": "$expand",
+                  "value": "line,historical"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07 - Email Management",
+      "item": [
+        {
+          "name": "Get All Cached Emails",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/CachedEmails",
+              "host": ["{{serviceUrl}}"],
+              "path": ["CachedEmails"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Emails by Date Range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/CachedEmails?$filter=receivedDateTime ge 2024-10-26T00:00:00Z",
+              "host": ["{{serviceUrl}}"],
+              "path": ["CachedEmails"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "receivedDateTime ge 2024-10-26T00:00:00Z"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Emails by Subject",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/CachedEmails?$filter=contains(subject,'Invoice')",
+              "host": ["{{serviceUrl}}"],
+              "path": ["CachedEmails"],
+              "query": [
+                {
+                  "key": "$filter",
+                  "value": "contains(subject,'Invoice')"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sync Emails - Last 2 Days",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Sync response has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success');",
+                  "    pm.expect(jsonData).to.have.property('emailsFetched');",
+                  "    pm.expect(jsonData).to.have.property('emailsStored');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"daysBack\": 2\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/syncEmails",
+              "host": ["{{serviceUrl}}"],
+              "path": ["syncEmails"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sync Emails - Last 7 Days",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"daysBack\": 7\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/syncEmails",
+              "host": ["{{serviceUrl}}"],
+              "path": ["syncEmails"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "08 - Embeddings",
+      "item": [
+        {
+          "name": "Generate Embeddings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Embeddings generated\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('mode');",
+                  "    pm.expect(jsonData).to.have.property('recordsProcessed');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{serviceUrl}}/generateEmbeddings",
+              "host": ["{{serviceUrl}}"],
+              "path": ["generateEmbeddings"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "09 - Statistics & Analytics",
+      "item": [
+        {
+          "name": "Get Statement Count by Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Statements?$apply=groupby((matchStatus),aggregate($count as count))",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Statements"],
+              "query": [
+                {
+                  "key": "$apply",
+                  "value": "groupby((matchStatus),aggregate($count as count))"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Average Confidence by Strategy",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/LineMatches?$apply=groupby((strategy),aggregate(confidence with average as avgConfidence))",
+              "host": ["{{serviceUrl}}"],
+              "path": ["LineMatches"],
+              "query": [
+                {
+                  "key": "$apply",
+                  "value": "groupby((strategy),aggregate(confidence with average as avgConfidence))"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Count Statements by Company Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Statements?$apply=groupby((Bukrs),aggregate($count as count))",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Statements"],
+              "query": [
+                {
+                  "key": "$apply",
+                  "value": "groupby((Bukrs),aggregate($count as count))"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "10 - Edge Cases & Validation",
+      "item": [
+        {
+          "name": "Add Statement - Missing Required Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should handle missing fields\", function () {",
+                  "    // May return 400 or handle gracefully",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400, 500]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Bukrs\": \"1000\",\n  \"Vwezw\": \"Test payment\"\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/addStatement",
+              "host": ["{{serviceUrl}}"],
+              "path": ["addStatement"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Statement - Very Long Vwezw",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Bukrs\": \"1000\",\n  \"Hbkid\": \"CITI\",\n  \"Hktid\": \"CHK01\",\n  \"Aznum\": \"2024100\",\n  \"Azdat\": \"2024-10-28\",\n  \"Astat\": \"A\",\n  \"Waers\": \"USD\",\n  \"Esnum\": \"EXT100\",\n  \"Kwbtr\": 100.00,\n  \"Vb1ok\": \"X\",\n  \"Vb2ok\": \"\",\n  \"Vwezw\": \"Line 1: Payment details\\nLine 2: Reference number\\nLine 3: Customer name\\nLine 4: Invoice number\\nLine 5: Amount\\nLine 6: Date\\nLine 7: Additional notes\\nLine 8: Payment method\\nLine 9: Transaction ID\\nLine 10: Approval code\\nLine 11: Processing date\\nLine 12: Settlement date\\nLine 13: Bank reference\\nLine 14: Wire transfer ID\\nLine 15: Final line\"\n}"
+            },
+            "url": {
+              "raw": "{{serviceUrl}}/addStatement",
+              "host": ["{{serviceUrl}}"],
+              "path": ["addStatement"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Non-Existent Statement",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should return 404 for non-existent record\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serviceUrl}}/Statements(99999999-9999-9999-9999-999999999999)",
+              "host": ["{{serviceUrl}}"],
+              "path": ["Statements(99999999-9999-9999-9999-999999999999)"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

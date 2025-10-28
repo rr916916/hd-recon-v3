@@ -1,0 +1,50 @@
+_schema-version: '3.1'
+ID: hd-recon-v3
+version: 1.0.0
+description: Home Depot Bank Reconciliation V3 - Simplified with Vector Search
+parameters:
+  enable-parallel-deployments: true
+
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+
+modules:
+  # --------------------- SERVER MODULE ------------------------
+  - name: hd-recon-v3-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+      memory: 512M
+      disk-quota: 512M
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: hd-recon-v3-db
+
+  # --------------------- DB DEPLOYER MODULE -------------------
+  - name: hd-recon-v3-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: hd-recon-v3-db
+
+resources:
+  # --------------------- HANA CLOUD ---------------------------
+  - name: hd-recon-v3-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+    properties:
+      hdi-service-name: ${service-name}
