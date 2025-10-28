@@ -31,10 +31,12 @@ async function searchInbox(companyName, amount, valueDate, daysBefore = 3, daysA
     endDate.setDate(endDate.getDate() + daysAfter);
 
     console.log(`📧 Searching emails for: "${companyName}" with amount ${amount}`);
+    console.log(`   Subject filter: "SAP HACKATHON"`);
     console.log(`   Date range: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
 
     // Build query parameters
-    const searchQuery = `"${companyName}"`; // Graph API search requires quotes
+    // Include both company name AND subject filter "SAP HACKATHON"
+    const searchQuery = `"${companyName}" AND subject:"SAP HACKATHON"`; // Graph API search requires quotes
 
     // Build URL with properly encoded parameters
     // Note: $search and $filter cannot be used together, so we'll use $search with $top
@@ -48,7 +50,9 @@ async function searchInbox(companyName, amount, valueDate, daysBefore = 3, daysA
     // Get mailbox from environment or use default
     // For app-only authentication, we must specify which mailbox to search
     // This should be configured in BTP environment variables
-    const mailboxEmail = process.env.GRAPH_MAILBOX_EMAIL || 'junoinvoices@resolvetech.com';
+    // const mailboxEmail = process.env.GRAPH_MAILBOX_EMAIL || 'junoinvoices@resolvetech.com';
+    const mailboxEmail =  'fin_api_support@homedepot.com';
+
 
     console.log(`   Searching mailbox: ${mailboxEmail}`);
 
@@ -188,7 +192,9 @@ function formatEmailResults(emails) {
  */
 async function fetchFromGraphAPI(endpoint) {
   try {
-    const mailboxEmail = process.env.GRAPH_MAILBOX_EMAIL || 'junoinvoices@resolvetech.com';
+    // const mailboxEmail = process.env.GRAPH_MAILBOX_EMAIL || 'junoinvoices@resolvetech.com';
+    const mailboxEmail = 'fin_api_support@homedepot.com';
+
 
     // Replace /me/ with /users/{email}/ for app-only auth
     const url = endpoint.startsWith('/me/')

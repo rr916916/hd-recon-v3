@@ -1,5 +1,6 @@
 const cds = require('@sap/cds');
 const emailSync = require('./lib/email-sync');
+const emailSearch = require('./lib/email-search');
 // Lazy load generate-embeddings to avoid deployment issues if scripts folder not present
 // const { generateEmbeddings } = require('../scripts/generate-embeddings');
 
@@ -211,6 +212,76 @@ module.exports = async function() {
       return {
         message: `Failed to delete emails: ${error.message}`,
         emailsDeleted: 0
+      };
+    }
+  });
+
+  /**
+   * Search Inbox Action Handler
+   */
+  this.on('searchInbox', async (req) => {
+    try {
+      const { companyName, amount, valueDate, daysBefore = 3, daysAfter = 3 } = req.data;
+
+      // Validate required parameters
+      if (!companyName) {
+        return {
+          success: false,
+          message: 'Company name is required',
+          emailsFound: 0,
+          searchQuery: '',
+          dateRange: '',
+          emails: []
+        };
+      }
+
+      if (!valueDate) {
+        return {
+          success: false,
+          message: 'Value date is required',
+          emailsFound: 0,
+          searchQuery: '',
+          dateRange: '',
+          emails: []
+        };
+      }
+
+      console.log(`📧 Searching inbox for: ${companyName}, amount: ${amount}, date: ${valueDate}`);
+
+      // Call the email search function
+      const results = await emailSearch.searchInbox(
+        companyName,
+        amount,
+        new Date(valueDate),
+        daysBefore,
+        daysAfter
+      );
+
+      // Format date range for response
+      const startDate = new Date(valueDate);
+      startDate.setDate(startDate.getDate() - daysBefore);
+      const endDate = new Date(valueDate);
+      endDate.setDate(endDate.getDate() + daysAfter);
+      const dateRange = `${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`;
+
+      return {
+        success: true,
+        message: `Found ${results.length} emails matching the search criteria`,
+        emailsFound: results.length,
+        searchQuery: companyName,
+        dateRange: dateRange,
+        emails: results
+      };
+
+    } catch (error) {
+      console.error('❌ Search inbox action failed:', error.message);
+      return {
+        success: false,
+        message: `Failed to search inbox: ${error.message}`,
+        emailsFound: 0,
+        searchQuery: '',
+        dateRange: '',
+        emails: []
       };
     }
   });

@@ -106,4 +106,32 @@ service ReconciliationService {
     message         : String;
     emailsDeleted   : Integer;
   };
+
+  /**
+   * Search Inbox Action: Search Outlook emails for matching company and amount
+   * Searches Microsoft Outlook inbox using Graph API
+   * Helps find payment details by searching emails with company name + amount
+   */
+  action searchInbox(
+    companyName : String,
+    amount      : Decimal,
+    valueDate   : Date,
+    daysBefore  : Integer,  // Days before value date to search (default: 3)
+    daysAfter   : Integer   // Days after value date to search (default: 3)
+  ) returns {
+    success       : Boolean;
+    message       : String;
+    emailsFound   : Integer;
+    searchQuery   : String;
+    dateRange     : String;
+    emails        : array of {
+      subject         : String;
+      sender          : String;
+      receivedDate    : DateTime;
+      bodyPreview     : String;
+      hasAttachments  : Boolean;
+      relevanceScore  : Decimal;
+      amountMatch     : Boolean;
+    };
+  };
 }
